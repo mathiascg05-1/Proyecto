@@ -1,5 +1,5 @@
 // PROYECTO ZOMBIES REALIZADO POR CARSTENS, MATHIAS; LUCA, FRANCO.
-// C.I. 31.046.461; 
+// C.I. 31.046.461; 31
 
 #include <iostream>
 #include <string>
