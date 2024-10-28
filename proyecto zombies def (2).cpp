@@ -1,5 +1,4 @@
-// PROYECTO ZOMBIES REALIZADO POR CARSTENS, MATHIAS; LUCA, FRANCO.
-// C.I. 31.046.461; 31
+// PROYECTO ZOMBIES
 
 #include <iostream>
 #include <string>
@@ -98,9 +97,19 @@ Armas* seleccionarYAgregarArma(Mochila* mochila) {
     // Validar la opción y agregar el arma a la mochila
     if (opcion >= 1 && opcion <= 7) {
         agregarArma(mochila, armas[opcion - 1]); // Agregar el arma seleccionada a la mochila
+        // Liberar la memoria de las armas que no fueron seleccionadas
+        for (int i = 0; i < 7; i++) {
+            if (i != opcion - 1) {
+                delete armas[i];
+            }
+        }
         return armas[opcion - 1]; // Retornar el puntero al arma seleccionada
     } else {
         cout << "Opción no válida" << endl;
+        // Liberar la memoria de todas las armas
+        for (int i = 0; i < 7; i++) {
+            delete armas[i];
+        }
         return nullptr; // Retornar nullptr si la opción no es válida
     }
 }
@@ -300,128 +309,34 @@ struct Soldado {
     int salud;
     Mochila mochila;
 
-    // Constructor
-    Soldado(string n, int s, Mochila m) 
-    : nombre(n), salud(s), mochila(m) {}
+    Soldado(const string& nombre, int salud, const Mochila& mochila)
+        : nombre(nombre), salud(salud), mochila(mochila) {}
 };
 
-struct Equipo {
-    vector<Soldado> soldados; // Usar un vector para almacenar soldados
 
-    // Agregar un soldado al equipo
+struct Equipo {
+    vector<Soldado> soldados;
+
     void agregarSoldado(const Soldado& soldado) {
         soldados.push_back(soldado);
     }
 
-    // Mostrar todos los soldados en el equipo
     void mostrarEquipo() const {
         cout << "Equipo:\n";
         for (const auto& soldado : soldados) {
-            cout << "Soldado: " << soldado.nombre << "\n";
-            mostrarMochila(soldado.mochila);
+            cout << "Soldado: " << soldado.nombre << ", Salud: " << soldado.salud << "\n";
+            cout << "Arma: " << soldado.mochila.arma->nombre << ", Defensa: " << soldado.mochila.defensa->nombre << ", Curación: " << soldado.mochila.curacion->nombre << "\n";
             cout << "-------------------\n";
         }
     }
 };
-
-void crearSoldados(Armas* armas[], Defensa* defensas[], Curacion* curaciones[], Soldado& soldadoDebil, Soldado& soldadoMedio, Soldado& soldadoFuerte) {
-    // Soldado débil
-    Mochila mochilaDebil;
-    mochilaDebil.arma = armas[0]; // Pistola
-    mochilaDebil.defensa = defensas[0]; // Chaleco antizombies
-    mochilaDebil.curacion = curaciones[0]; // Vendas
-    soldadoDebil = Soldado("Soldado Débil", 50, mochilaDebil);
-
-    // Soldado medio
-    Mochila mochilaMedio;
-    mochilaMedio.arma = armas[1]; // Fusil de Asalto
-    mochilaMedio.defensa = defensas[1]; // Escudo
-    mochilaMedio.curacion = curaciones[1]; // Botiquín
-    soldadoMedio = Soldado("Soldado Medio", 75, mochilaMedio);
-
-    // Soldado fuerte
-    Mochila mochilaFuerte;
-    mochilaFuerte.arma = armas[5]; // Líquido inflamable
-    mochilaFuerte.defensa = defensas[3]; // Armadura pesada
-    mochilaFuerte.curacion = curaciones[3]; // Suero de supervivencia
-    soldadoFuerte = Soldado("Soldado Fuerte", 100, mochilaFuerte);
-}
-
-void modificarSoldado(Soldado& soldado, Armas* armas[], Defensa* defensas[], Curacion* curaciones[]) {
-    int opcion;
-
-    do {
-        cout << "¿Qué deseas modificar para " << soldado.nombre << "?" << endl;
-        cout << "1. Arma" << endl;
-        cout << "2. Defensa" << endl;
-        cout << "3. Curación" << endl;
-        cout << "0. Salir" << endl;
-        cout << "Opción: ";
-        cin >> opcion;
-
-        switch (opcion) {
-            case 1: { // Modificar arma
-                cout << "Selecciona un nuevo arma para " << soldado.nombre << " (0 para cancelar):" << endl;
-                for (int i = 0; i < 7; ++i) {
-                    cout << i + 1 << ": " << armas[i];       
-                    cout << i + 1 << ": " << armas[i]->nombre << endl;
-                }
-                cout << "Opción: ";
-                cin >> opcion;
-                if (opcion > 0 && opcion <= 7) {
-                    soldado.mochila.arma = armas[opcion - 1]; // Actualizar el arma
-                    cout << "Arma actualizada a: " << soldado.mochila.arma->nombre << endl;
-                } else if (opcion != 0) {
-                    cout << "Opción no válida. El arma no ha sido modificada." << endl;
-                }
-                break;
-            }
-            case 2: { // Modificar defensa
-                cout << "Selecciona una nueva defensa para " << soldado.nombre << " (0 para cancelar):" << endl;
-                for (int i = 0; i < 4; ++i) {
-                    cout << i + 1 << ": " << defensas[i]->nombre << endl;
-                }
-                cout << "Opción: ";
-                cin >> opcion;
-                if (opcion > 0 && opcion <= 4) {
-                    soldado.mochila.defensa = defensas[opcion - 1]; // Actualizar la defensa
-                    cout << "Defensa actualizada a: " << soldado.mochila.defensa->nombre << endl;
-                } else if (opcion != 0) {
-                    cout << "Opción no válida. La defensa no ha sido modificada." << endl;
-                }
-                break;
-            }
-            case 3: { // Modificar curación
-                cout << "Selecciona un nuevo ítem de curación para " << soldado.nombre << " (0 para cancelar):" << endl;
-                for (int i = 0; i < 4; ++i) {
-                    cout << i + 1 << ": " << curaciones[i]->nombre << endl;
-                }
-                cout << "Opción: ";
-                cin >> opcion;
-                if (opcion > 0 && opcion <= 4) {
-                    soldado.mochila.curacion = curaciones[opcion - 1]; // Actualizar la curación
-                    cout << "Ítem de curación actualizado a: " << soldado.mochila.curacion->nombre << endl;
-                } else if (opcion != 0) {
-                    cout << "Opción no válida. El ítem de curación no ha sido modificado." << endl;
-                }
-                break;
-            }
-            case 0:
-                cout << "Saliendo de la modificación." << endl;
-                break;
-            default:
-                cout << "Opción no válida. Intenta de nuevo." << endl;
-                break;
-        }
-    } while (opcion != 0);
-}
 
 // Estructura para representar una Estacion
 struct Estacion {
     string nombreEstacion;
     int numZombies;
     vector<Zombie> zombies;
-    struct Equipo equipo;
+    Equipo equipo;
     Estacion* siguiente;
 };
 
@@ -430,20 +345,82 @@ bool estaVacio(Estacion* lista) {
     return lista == nullptr;
 }
 
-// Funcion para mostrar las estaciones
-void mostrarEstaciones(Estacion* estaciones) {
+void mostrarEstacionesConS(Estacion* estaciones) {
     if (estaVacio(estaciones)) {
-        cout << "La lista esta vacia." << endl;
+        cout << "La lista está vacía." << endl;
         return;
     }
 
     int i = 0;
     while (estaciones != nullptr) {
-        cout << i << ". " << estaciones->nombreEstacion<<endl<<endl;
-        cout << "    () Numero de zombies: " << estaciones->numZombies<<endl;
-        for (const Zombie& z : estaciones->zombies) {
-            cout << "        " << z.nombre << " - Fortaleza: " << z.fortaleza << ", Ataque: " << z.ataque<<endl;
+        cout << i << ". " << estaciones->nombreEstacion << endl;
+
+        // Mostrar información del equipo en la estación
+        cout << "    Soldados en esta estación: " << endl;
+        if (!estaciones->equipo.soldados.empty()) {
+            for (const Soldado& soldado : estaciones->equipo.soldados) {
+                cout << "        Soldado: " << soldado.nombre << endl;
+
+                // Mostrar la mochila del soldado
+                if (soldado.mochila.arma != nullptr) {
+                    cout << "            Arma: " << soldado.mochila.arma->nombre << endl;
+                } else {
+                    cout << "            Arma: Ninguna" << endl;
+                }
+
+                if (soldado.mochila.defensa != nullptr) {
+                    cout << "            Defensa: " << soldado.mochila.defensa->nombre << endl;
+                } else {
+                    cout << "            Defensa: Ninguna" << endl;
+                }
+
+                if (soldado.mochila.curacion != nullptr) {
+                    cout << "            Curación: " << soldado.mochila.curacion->nombre << endl;
+                } else {
+                    cout << "            Curación: Ninguna" << endl;
+                }
+
+                cout << endl; // Línea en blanco entre soldados
+            }
+        } else {
+            cout << "        No hay soldados en esta estación." << endl;
         }
+
+        estaciones = estaciones->siguiente; // Avanzar al siguiente nodo
+        i++;
+    }
+}
+
+
+
+// Funcion para mostrar las estaciones
+void mostrarEstacionesConZ(Estacion* estaciones) {
+    if (estaVacio(estaciones)) {
+        cout << "La lista está vacía." << endl;
+        return;
+    }
+
+    int i = 0;
+    while (estaciones != nullptr) {
+        cout << i << ". " << estaciones->nombreEstacion << endl;
+        cout << "    Número de zombies: " << estaciones->numZombies << endl;
+
+        // Mostrar información de los zombies en la estación
+        for (const Zombie& z : estaciones->zombies) {
+            cout << "        " << z.nombre << " - Fortaleza: " << z.fortaleza << ", Ataque: " << z.ataque << endl;
+        }
+
+        // Mostrar información del equipo en la estación
+        cout << "    Equipo en esta estación: " << endl;
+        // Aquí asumimos que el equipo tiene un método para mostrar su información
+        if (!estaciones->equipo.soldados.empty()) {
+            for (const Soldado& soldado : estaciones->equipo.soldados) {
+                cout << "        Soldado: " << soldado.nombre << ", Salud: " << soldado.salud << endl;
+            }
+        } else {
+            cout << "        No hay soldados en esta estación." << endl;
+        }
+
         estaciones = estaciones->siguiente;
         i++;
     }
@@ -456,6 +433,8 @@ void crearEstacion(Estacion*& estaciones) {
     cin >> nuevaEstacion->nombreEstacion;
     cout << "Ingrese el numero de zombies a agregar: ";
     cin >> nuevaEstacion->numZombies;
+
+    nuevaEstacion->siguiente = nullptr; // Inicializar el puntero siguiente a nullptr
 
     for (int i = 0; i < nuevaEstacion->numZombies; i++) {
         int tipo;
@@ -492,7 +471,7 @@ void crearEstacion(Estacion*& estaciones) {
         cout << "Estacion '" << nuevaEstacion->nombreEstacion << "' agregada a la lista." << endl;
     } else {
         // Preguntar por la posicion para insertar
-        mostrarEstaciones(estaciones);
+        mostrarEstacionesConZ(estaciones);
         int posicion;
         cout << "Ingrese la posicion para insertar la nueva estacion (0 para inicio, si el indice es mayor al ultimo de la lista, se ingresara al final): ";
         cin >> posicion;
@@ -518,6 +497,7 @@ void crearEstacion(Estacion*& estaciones) {
         cout << "Estacion '" << nuevaEstacion->nombreEstacion << "' insertada en la posicion " << posicion << "." << endl;
     }
 }
+
 
 // Funcion para eliminar una estacion
 void eliminarEstacion(int pos, Estacion*& estaciones) {
@@ -600,9 +580,9 @@ void mostrarEquiposPorEstacion(Estacion* estaciones) {
         for (const Soldado& s : estaciones->equipo.soldados) {
             cout << "        Soldado: " << s.nombre 
                  << " - Salud: " << s.salud 
-                 << ", Arma: " << s.mochila.arma 
-                 << ", Defensa: " << s.mochila.defensa 
-                 << ", Curación: " << s.mochila.curacion << endl;
+                 << ", Arma: " << (s.mochila.arma ? s.mochila.arma->nombre : "Ninguna") 
+                 << ", Defensa: " << (s.mochila.defensa ? s.mochila.defensa->nombre : "Ninguna") 
+                 << ", Curación: " << (s.mochila.curacion ? s.mochila.curacion->nombre : "Ninguna") << endl;
         }
 
         estaciones = estaciones->siguiente; // Avanzar al siguiente nodo
@@ -610,19 +590,66 @@ void mostrarEquiposPorEstacion(Estacion* estaciones) {
     }
 }
 
-/*
-void eliminarSoldado(Equipo& equipo, Soldado& soldado) {
-    // Verificar si la salud del soldado es menor o igual a 0
-    if (soldado.salud <= 0) {
-        // Eliminar el soldado del equipo
-        equipo.eliminarSoldado(soldado); // Asumiendo que hay un método para eliminar soldados en el equipo
-        cout << "Soldado " << soldado.nombre << " ha sido eliminado debido a que su salud es " << soldado.salud << "." << endl;
-    } else {
-        cout << "No se puede eliminar al soldado " << soldado.nombre << " porque su salud es " << soldado.salud << "." << endl;
+
+void asignarEquipoAEstacion(Estacion* estaciones, Equipo& equipo) {
+    int estacionSeleccionada;
+    mostrarEquiposPorEstacion(estaciones);
+    cout << "Seleccione la estación donde desea añadir el equipo (ingrese el numero de la estación): ";
+    cin >> estacionSeleccionada;
+
+    // Validar la selección de la estación
+    Estacion* temp = estaciones;
+    int index = 0;
+    while (temp != nullptr && index < estacionSeleccionada) {
+        temp = temp->siguiente;
+        index++;
     }
+
+    // Comprobar si la estación seleccionada es válida
+    if (temp != nullptr) {
+        // Asignar el equipo a la estación seleccionada
+        temp->equipo = equipo; // Asignar el equipo
+        cout << "Equipo añadido a la estación " << temp->nombreEstacion << "." << endl;
+
+        // Aquí puedes agregar la lógica para ingresar los soldados al equipo
+        int numSoldados;
+        cout << "¿Cuántos soldados desea agregar al equipo? ";
+        cin >> numSoldados;
+
+        for (int i = 0; i < numSoldados; i++) {
+            string nombre;
+            int salud;
+            Mochila mochila; // Crear una nueva mochila para el soldado
+
+            cout << "Ingrese el nombre del soldado " << (i + 1) << ": ";
+            cin >> nombre;
+            cout << "Ingrese la salud del soldado " << (i + 1) << ": ";
+            cin >> salud;
+
+            // Rellenar la mochila del soldado
+            cout << "Rellenar mochila del soldado " << nombre << ":\n";
+            seleccionarYAgregarArma(&mochila); // Seleccionar y agregar un arma
+            seleccionarYAgregarDefensa(&mochila); // Seleccionar y agregar una defensa
+            seleccionarYAgregarCuracion(&mochila); // Seleccionar y agregar una curación
+
+            // Crear el soldado con la mochila
+            Soldado nuevoSoldado(nombre, salud, mochila);
+
+            // Agregar el soldado al equipo
+            temp->equipo.soldados.push_back(nuevoSoldado);
+
+            // Mostrar la mochila del soldado
+            cout << "Mochila del soldado " << nuevoSoldado.nombre << ":\n\n";
+            mostrarMochila(mochila);
+            cout << endl; // Línea en blanco entre soldados
+        }
+    } else {
+        cout << "Estación no válida." << endl;
+    }
+    system("pause");
 }
-*/
-int main() {
+
+int main(){
 
     Estacion* estaciones = nullptr;
     Estacion estacion;
@@ -699,14 +726,15 @@ int main() {
     curaciones[3] = new Curacion("Suero de supervivencia", 15, 10);
 
     do {
-        system("cls");
+        system("cls"); // Limpia la consola
         cout << "\n-- Menú Proyecto 1: Running Dead --" << endl;
         cout << "1. Gestión Accesorios" << endl;
         cout << "2. Gestión Equipos" << endl;
         cout << "3. Gestión de Mochilas" << endl;
         cout << "4. Gestion de Estaciones y Zombies" << endl;
-        cout << "5. Misiones" << endl;
-        cout << "6. Bitácora" << endl;
+        cout << "5. Consultar un equipo" << endl;
+        cout << "6. Misiones" << endl;
+        cout << "7. Bitácora" << endl;
         cout << "0. Salir" << endl;
         cout << "Seleccione una opción: ";
         cin >> opcion;
@@ -741,55 +769,34 @@ int main() {
                 break;
             }
             case 2:
-        cout << "\n-- Gestión de soldados y equipos --" << endl;
-        do {
-            cout << "1. Agregar soldados a un equipo" << endl;
-            cout << "2. Modificar soldados de un equipo" << endl;
-            cout << "3. Eliminar soldados de un equipo" << endl;
-            cout << "4. Mostrar equipos con sus miembros" << endl;
-            cout << "0. Salir" << endl; // Opción para salir del menú
-            cout << "Seleccione una opción: ";
-            cin >> opcion;
-            cout << endl;
-
-            switch(opcion) {
-                case 1:
-                    break;
-                case 2:
-                    // Llama a la función para modificar soldados
-                    break;
-                case 3:
-                    // Llama a la función para eliminar soldados
-                    break;
-                case 4:
-                    mostrarEquiposPorEstacion(estaciones);// Llama a la función para mostrar equipos
-                    break;
-                case 0:
-                    cout << "Saliendo del menú de gestión de soldados y equipos." << endl;
-                    break;
-                default:
-                    cout << "Opción no válida. Por favor, seleccione una opción válida." << endl;
-                    break;
-            }
-            cout << endl;
-        } while (opcion != 0); // Repite hasta que el usuario elija salir
-        break;
-            case 3:
-                cout << "\n -- Gestión de mochila --" << endl;
                 do {
-                    cout << "1. Modificar items de la mochila" << endl;
-                    cout << "2. Mostrar items de la mochila" << endl;
-                    cout << "0. Salir" << endl; // Opción para salir del menú
+                    cout << "Gestión de soldados y equipos" << endl;
+                    cout << "1. Ver estaciones y equipos" << endl;
+                    cout << "2. Crear nuevo equipo" << endl;
+                    cout << "0. Volver al menú principal" << endl;
                     cout << "Seleccione una opción: ";
                     cin >> opcion;
-                    cout << endl;
-                    switch(opcion) {
-                        case 1: ; break;
-                        case 2: ; break;
-                        case 0: ; break;
-                            default: cout << "Opcion no valida. Por favor, intente de nuevo.\n";
-                        }
-                    } while (opcion != 0);
+
+                    switch (opcion) {
+                        case 1:
+                            // Mostrar estaciones y sus equipos
+                            mostrarEquiposPorEstacion(estaciones);
+                            break;
+                        case 2:
+                            // Crear nuevo equipo
+                            asignarEquipoAEstacion(estaciones, equipo);
+                            break;
+                        case 0:
+                            cout << "Volviendo al menú principal..." << endl;
+                            break;
+                        default:
+                            cout << "Opción no válida. Intente de nuevo." << endl;
+                            break;
+                    }
+                } while (opcion != 0);
+                break;
+            case 3:
+                // funciones para gestión de mochilas
                 break;
             case 4:
                 cout << "\n-- Gestion de Estaciones y Zombies --" << endl;
@@ -797,17 +804,17 @@ int main() {
                     cout << "1. Crear estacion\n";
                     cout << "2. Mostrar estaciones\n";
                     cout << "3. Eliminar estacion\n";
-                    cout << "0. Salir\n";
+                    cout << "4. Salir\n";
                     cout << "Ingrese su opcion: ";
                     cin >> opcion;cout<<endl;
 
                     switch (opcion) {
                         case 1: crearEstacion(estaciones); break;
-                        case 2: mostrarEstaciones(estaciones); break;
+                        case 2: mostrarEstacionesConZ(estaciones); break;
                         case 3: {
                             int pos;
                             cout << "Ingrese la posicion de la estacion a eliminar: \n";
-                            mostrarEstaciones(estaciones);
+                            mostrarEstacionesConZ(estaciones);
                             cin >> pos;
                             eliminarEstacion(pos, estaciones);
                             break;
@@ -815,14 +822,16 @@ int main() {
                             case 4: break;
                             default: cout << "Opcion no valida. Por favor, intente de nuevo.\n";
                         }
-                    } while (opcion != 0);
+                    } while (opcion != 4);
 
                     break;
-                break;
             case 5:
-                // funciones para misiones
+                // funciones para consultar un equipo
                 break;
             case 6:
+                // funciones para misiones
+                break;
+            case 7:
                 // funciones para bitácora
                 break;
             case 0:
@@ -835,6 +844,19 @@ int main() {
     } while (opcion != 0); // Continúa hasta que el usuario elija salir
 
     liberarEstaciones(estaciones);
+
+    for (int i = 0; i < 7; i++) {
+        delete armas[i];
+    }
+
+    for (int i = 0; i < 4; i++) {
+        delete defensas[i];
+    }
+
+    for (int i = 0; i < 4; i++) {
+        delete curaciones[i];
+    }
+
 
     return 0;
 }
