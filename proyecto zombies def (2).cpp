@@ -253,39 +253,6 @@ void mostrarCuraciones(Curacion* curaciones[], int cantidad) {
     }
 }
 
-// Funcion para eliminar un arma
-void eliminarArma(Mochila* mochila) {
-    if (mochila->arma) {
-        cout << "Eliminando arma: " << mochila->arma->nombre << endl;
-        delete mochila->arma;
-        mochila->arma = nullptr; // Establecer el puntero a nullptr
-    } else {
-        cout << "No hay arma para eliminar.\n";
-    }
-}
-
-// Funcion para eliminar una defensa
-void eliminarDefensa(Mochila* mochila) {
-    if (mochila->defensa) {
-        cout << "Eliminando defensa: " << mochila->defensa->nombre << endl;
-        delete mochila->defensa;
-        mochila->defensa = nullptr; // Establecer el puntero a nullptr
-    } else {
-        cout << "No hay defensa para eliminar.\n";
-    }
-}
-
-// Funcion para eliminar una curacion
-void eliminarCuracion(Mochila* mochila) {
-    if (mochila->curacion) {
-        cout << "Eliminando curacion: " << mochila->curacion->nombre << endl;
-        delete mochila->curacion;
-        mochila->curacion = nullptr; // Establecer el puntero a nullptr
-    } else {
-        cout << "No hay curacion para eliminar.\n";
-    }
-}
-
 void mostrarMochila(const Mochila& mochila) {
     if (mochila.arma != nullptr) {
         cout << "Arma: " << mochila.arma->nombre << endl;
@@ -306,33 +273,6 @@ void mostrarMochila(const Mochila& mochila) {
         cout << "Curacion: " << mochila.curacion->nombre << endl;
         cout << "Vida recuperada: " << mochila.curacion->vida_recuperada << endl;
         cout << "Usos: " << mochila.curacion->usos << endl;
-    }
-}
-
-void opcionesEliminacionMochila(Mochila* mochila) {
-    int opcion;
-    mostrarMochila(*mochila);
-    
-    cout << "¿Que deseas eliminar?\n";
-    cout << "1. Arma\n";
-    cout << "2. Defensa\n";
-    cout << "3. Curacion\n";
-    cout << "Elige una opcion (1-3): ";
-    cin >> opcion;
-
-    switch (opcion) {
-        case 1:
-            eliminarArma(mochila);
-            break;
-        case 2:
-            eliminarDefensa(mochila);
-            break;
-        case 3:
-            eliminarCuracion(mochila);
-            break;
-        default:
-            cout << "Opcion no valida.\n";
-            break;
     }
 }
 
@@ -583,6 +523,49 @@ void mostrarEquiposPorEstacion(Estacion* estaciones) {
     }
 }
 
+Zombie* seleccionarZombie(Estacion* estaciones) {
+    mostrarEstacionesConZ(estaciones);
+    int seleccion;
+    cout << "Seleccione el numero del zombie: ";
+    cin >> seleccion;cout<<endl;
+
+    // Buscar el soldado en las estaciones
+    int contador = 1;
+    while (estaciones != nullptr) {
+        for (auto& zombies : estaciones->zombies) {
+            if (contador == seleccion) {
+                return &zombies;
+            }
+            contador++;
+        }
+        estaciones = estaciones->siguiente;
+    }
+
+    cout << "Seleccion no valida.\n";
+    return nullptr; // Retornar nullptr si no se encuentra el soldado
+}
+
+void eliminarZombies(Zombie* zombie, Estacion* estaciones) {
+    Estacion* aux = estaciones; // Asumiendo que 'inicio' es un puntero a la primera estación
+
+    while (aux != nullptr) {
+        auto it = aux->zombies.begin();
+        while (it != aux->zombies.end()) {
+            if (&(*it) == zombie) { 
+                it = aux->zombies.erase(it); // Elimina el zombie y actualiza el iterador
+                aux->numZombies--; // Reduce el contador de zombies en la estación
+                cout << "Zombie eliminado. Total de zombies en la estación: " << aux->numZombies << endl;
+                return; 
+            } else {
+                ++it; // Solo avanzamos si no hemos borrado un zombie
+            }
+        }
+        aux = aux->siguiente; // Avanza a la siguiente estación
+    }
+
+    cout << "Zombie no encontrado en ninguna estación.\n"; 
+}
+
 
 void asignarEquipoAEstacion(Estacion* estaciones, Equipo& equipo) {
     int estacionSeleccionada;
@@ -601,10 +584,10 @@ void asignarEquipoAEstacion(Estacion* estaciones, Equipo& equipo) {
     // Comprobar si la estacion seleccionada es valida
     if (temp != nullptr) {
         // Asignar el equipo a la estacion seleccionada
-        temp->equipo = equipo; // Asignar el equipo
+        temp->equipo = equipo; 
         cout << "Equipo anadido a la estacion " << temp->nombreEstacion << "." << endl;
 
-        // Aqui puedes agregar la logica para ingresar los soldados al equipo
+
         int numSoldados;
         cout << "¿Cuantos soldados desea agregar al equipo? ";
         cin >> numSoldados;
@@ -668,7 +651,7 @@ void mostrarSoldados(Estacion* estaciones) {
 Soldado* seleccionarSoldado(Estacion* estaciones) {
     mostrarSoldados(estaciones);
     int seleccion;
-    cout << "Seleccione el numero del soldado que desea modificar: ";
+    cout << "Seleccione el numero del soldado: ";
     cin >> seleccion;cout<<endl;
 
     // Buscar el soldado en las estaciones
@@ -687,6 +670,25 @@ Soldado* seleccionarSoldado(Estacion* estaciones) {
     return nullptr; // Retornar nullptr si no se encuentra el soldado
 }
 
+void eliminarSoldado(Soldado* soldado, Estacion* estaciones) {
+    Estacion* aux = estaciones;
+
+    while (aux != nullptr) {
+        auto it = aux->equipo.soldados.begin();
+        while (it != aux->equipo.soldados.end()) {
+            if (&(*it) == soldado) { // Comparamos la dirección del soldado
+                it = aux->equipo.soldados.erase(it); // Elimina el soldado y actualiza el iterador
+                cout << "Soldado eliminado.\n";
+                return; // Salimos de la función después de eliminar el soldado
+            } else {
+                ++it; // Solo avanzamos si no hemos borrado un soldado
+            }
+        }
+        aux = aux->siguiente; // Avanza a la siguiente estación
+    }
+
+    cout << "Soldado no encontrado en ninguna estación.\n"; // Mensaje si no se encuentra el soldado
+}
 
 void modificarMochila(Soldado* soldado) {
     if (soldado == nullptr) {
@@ -727,6 +729,114 @@ void modificarMochila(Soldado* soldado) {
     } while (opcion != 0);
 }
 
+void AgregarAMochila(Soldado* soldado) {
+    if (soldado == nullptr) {
+        cout << "No se pudo modificar la mochila, soldado no valido.\n";
+        return;
+    }
+
+    int opcion;
+    do {
+        cout << "\n-- Agregar elemento a Mochila de " << soldado->nombre << " --\n";
+        cout << "1. Agregar Arma\n";
+        cout << "2. Agregar Defensa\n";
+        cout << "3. Agregar Curacion\n";
+        cout << "0. Volver\n";
+        cout << "Seleccione una opcion: ";
+        cin >> opcion;
+
+        switch (opcion) {
+            case 1:
+                cout << "Seleccionando nueva arma...\n";
+                seleccionarYAgregarArma(&soldado->mochila);
+                break;
+            case 2:
+                cout << "Seleccionando nueva defensa...\n";
+                seleccionarYAgregarDefensa(&soldado->mochila);
+                break;
+            case 3:
+                cout << "Seleccionando nueva curacion...\n";
+                seleccionarYAgregarCuracion(&soldado->mochila);
+                break;
+            case 0:
+                cout << "Volviendo al menu anterior...\n";
+                break;
+            default:
+                cout << "Opcion no valida.\n";
+                break;
+        }
+    } while (opcion != 0);
+}
+
+void eliminarArma(Mochila* mochila) {
+    if (mochila->arma) {
+        cout << "Eliminando arma: " << mochila->arma->nombre << endl;
+        delete mochila->arma;
+        mochila->arma = nullptr; // Establecer el puntero a nullptr
+    } else {
+        cout << "No hay arma para eliminar.\n";
+    }
+}
+
+void eliminarDefensa(Mochila* mochila) {
+    if (mochila->defensa) {
+        cout << "Eliminando defensa: " << mochila->defensa->nombre << endl;
+        delete mochila->defensa;
+        mochila->defensa = nullptr; // Establecer el puntero a nullptr
+    } else {
+        cout << "No hay defensa para eliminar.\n";
+    }
+}
+
+void eliminarCuracion(Mochila* mochila) {
+    if (mochila ->curacion) {
+        cout << "Eliminando curacion: " << mochila->curacion->nombre << endl;
+        delete mochila->curacion;
+        mochila->curacion = nullptr; // Establecer el puntero a nullptr
+    } else {
+        cout << "No hay curacion para eliminar.\n";
+    }
+}
+
+void eliminarElementoDelSoldado(Soldado* soldado) {
+    if (soldado == nullptr) {
+        cout << "No se pudo modificar la mochila, soldado no valido.\n";
+        return;
+    }
+
+    int opcion;
+    do {
+        cout << "Seleccione el elemento que desea eliminar:\n";
+        cout << "1. Eliminar arma\n";
+        cout << "2. Eliminar defensa\n";
+        cout << "3. Eliminar curacion\n";
+        cout << "0. Volver\n";
+        cout << "Opción: ";
+        cin >> opcion;
+        cout << endl;
+
+        switch (opcion) {
+            case 1:
+                eliminarArma(&soldado->mochila);
+                break;
+            case 2:
+                eliminarDefensa(&soldado->mochila);
+                break;
+            case 3:
+                eliminarCuracion(&soldado->mochila);
+                break;
+            case 4:
+                cout << "Saliendo del menú de eliminación.\n";
+                break;
+            default:
+                cout << "Opción no válida. Intente de nuevo.\n";
+                break;
+        }
+
+        cout << endl; // Espacio adicional para mejor legibilidad
+
+    } while (opcion != 4); // Continúa hasta que el usuario elija salir
+}
 
 int main(){
 
@@ -856,6 +966,7 @@ int main(){
                         cout << "\n-- Gestion de soldados y equipos --" << endl;
                         cout << "1. Ver estaciones y equipos" << endl;
                         cout << "2. Crear nuevo equipo" << endl;
+                        cout << "3. Eliminar soldados de un equipo" << endl;
                         cout << "0. Volver al menu principal" << endl;
                         cout << "Seleccione una opcion: ";
                         cin >> subOpcion2;
@@ -867,6 +978,11 @@ int main(){
                             case 2:
                                 asignarEquipoAEstacion(estaciones, equipo);
                                 break;
+                            case 3:{
+                                Soldado* soldado = seleccionarSoldado(estaciones);
+                                eliminarSoldado(soldado, estaciones);
+                                break;
+                            }
                             case 0:
                                 cout << "Volviendo al menu principal..." << endl;
                                 break;
@@ -883,6 +999,8 @@ int main(){
                         cout << "\n-- Gestion de Mochila --" << endl;
                         cout << "1. Mostrar Mochilas y soldados" << endl;
                         cout << "2. Modificar contenido de la mochila" << endl;
+                        cout << "3. Eliminar contenido de la mochila" << endl;
+                        cout << "4. Agregar elemento a mochila" << endl;
                         cout << "0. Volver al menu principal" << endl;
                         cin >> subOpcion3;
 
@@ -896,6 +1014,16 @@ int main(){
                                 modificarMochila(soldado);
                                 break;
                                 }
+                            case 3:{
+                                Soldado* soldado = seleccionarSoldado(estaciones);
+                                eliminarElementoDelSoldado(soldado);
+                                break;
+                            }
+                            case 4:{
+                                Soldado* soldado = seleccionarSoldado(estaciones);
+                                AgregarAMochila(soldado);
+                                break;
+                            }
                             case 0:
                                 cout << "Volviendo al menu principal..." << endl;
                                 break;
@@ -910,9 +1038,10 @@ int main(){
                     int subOpcion4;
                     do {
                         cout << "\n-- Gestion de Estaciones y Zombies --" << endl;
-                        cout << "1. Crear estacion\n";
+                        cout << "1. Crear estacion y zombies\n";
                         cout << "2. Mostrar estaciones\n";
                         cout << "3. Eliminar estacion\n";
+                        cout << "4. Eliminar zombie\n";
                         cout << "0. Volver al menu principal\n";
                         cout << "Ingrese su opcion: ";
                         cin >> subOpcion4;
@@ -932,6 +1061,11 @@ int main(){
                                 eliminarEstacion(pos, estaciones);
                                 break;
                             }
+                            case 4: {
+                                Zombie* zombies = seleccionarZombie(estaciones);
+                                eliminarZombies(zombies, estaciones);
+                                break;
+                            }
                             case 0:
                                 break;
                             default: 
@@ -949,7 +1083,7 @@ int main(){
                     cout<<endl<<"2. Mostrar Estaciones y soldados";
                     cout<<endl<<"3. Mostrar Estaciones, zombies y Soldados";
                     cout<<endl<<"0. Volver al menu principal";
-                    cout<<"ingrese su opcion: ";cin>>subopcion5;
+                    cout<<"Ingrese su opcion: ";cin>>subopcion5;
                     cout<<endl;
 
                     switch (subopcion5)
